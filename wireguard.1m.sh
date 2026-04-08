@@ -42,6 +42,7 @@ swiftbar_refresh() {
 
 if [ "${1:-}" = "up" ]; then
   [ -z "$WG_QUICK" ] && exit 1
+  is_connected && { swiftbar_refresh; exit 0; }
   osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' up '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
   # Wait for interface to come up before refreshing (up to 15s)
   for _ in $(seq 1 15); do
@@ -54,6 +55,7 @@ fi
 
 if [ "${1:-}" = "down" ]; then
   [ -z "$WG_QUICK" ] && exit 1
+  is_connected || { swiftbar_refresh; exit 0; }
   osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' down '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
   # Wait for interface to go down before refreshing (up to 15s)
   for _ in $(seq 1 15); do
