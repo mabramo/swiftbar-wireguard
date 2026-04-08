@@ -15,7 +15,7 @@ WG_CONF="${HOME}/.config/wireguard/wg0.conf"
 WG_IFACE="wg0"
 
 # Locate wg-quick — SwiftBar runs with a limited PATH so we search common locations
-WG_QUICK="$(PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:$PATH" command -v wg-quick 2>/dev/null)"
+WG_QUICK="$(find /opt/homebrew/bin /usr/local/bin /usr/bin -name wg-quick 2>/dev/null | head -1)"
 
 # ── State ──────────────────────────────────────────────────────────────────────
 is_connected() {
