@@ -2,7 +2,7 @@
 
 A macOS menu bar WireGuard toggle — no App Store required.
 
-![Connected](https://img.shields.io/badge/status-connected-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Features
 
@@ -10,7 +10,7 @@ A macOS menu bar WireGuard toggle — no App Store required.
 - Click to connect or disconnect
 - Displays your WireGuard IP when connected
 - Uses SF Symbols (lock icon)
-- No App Store, no subscriptions
+- No App Store, no subscriptions, no accounts
 
 ## Requirements
 
@@ -32,22 +32,37 @@ brew install wireguard-tools wireguard-go bash
    ```bash
    chmod +x wireguard.1m.sh
    ```
-4. Edit the config section at the top of the script:
+4. Edit the config at the top of the script to point to your WireGuard config file:
    ```bash
-   WG_CONF="${HOME}/.config/wireguard/wg0.conf"  # path to your config
-   WG_IFACE="wg0"                                 # interface name
+   WG_CONF="${HOME}/.config/wireguard/wg0.conf"
    ```
 5. Refresh SwiftBar
 
 ## Usage
 
-- **Menu bar icon:** lock (gray = disconnected, green = connected)
-- **Click → Connect** to bring the tunnel up (will prompt for your password)
-- **Click → Disconnect** to bring it down
+- **Menu bar icon:** lock open (gray = disconnected), lock filled (green = connected)
+- **Connect** — brings the tunnel up, prompts for your password once
+- **Disconnect** — brings it down
+- The icon updates automatically after the tunnel state changes (polls up to 15s)
 
-## Config
+## DNS
 
-The plugin reads `WG_CONF` and `WG_IFACE` from the top of the script. Edit these to match your setup. The interface name should match the filename of your WireGuard config without the `.conf` extension.
+`wg-quick` sets system-wide DNS when a `DNS =` line is present in your config, which breaks internet connectivity if your DNS server is only reachable over the tunnel.
+
+For split DNS — routing only `.lan` (or your local domain) queries to your internal DNS while leaving everything else alone — use macOS's built-in per-domain resolver:
+
+```bash
+sudo mkdir -p /etc/resolver
+echo "nameserver <your-dns-ip>" | sudo tee /etc/resolver/lan
+```
+
+Then omit the `DNS =` line from your `wg0.conf`. macOS will send `.lan` queries to your internal DNS and use your normal DNS for everything else.
+
+## Notes
+
+- On macOS, `wireguard-go` creates a `utun` interface (e.g. `utun4`) rather than a named `wg0` interface. The plugin handles this automatically.
+- `wg-quick` and `wg` are not on SwiftBar's default `PATH`. The plugin locates them via `find` on known Homebrew paths rather than relying on `PATH`.
+- The plugin will display a warning in the menu bar if `wg-quick` or `bash 4+` are not found.
 
 ## License
 
