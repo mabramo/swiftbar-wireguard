@@ -28,15 +28,21 @@ get_ip() {
 }
 
 # ── Actions ────────────────────────────────────────────────────────────────────
+swiftbar_refresh() {
+  open "swiftbar://refreshPlugin?name=$(basename "$0")"
+}
+
 if [ "${1:-}" = "up" ]; then
   [ -z "$WG_QUICK" ] && exit 1
   osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' up '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
+  swiftbar_refresh
   exit 0
 fi
 
 if [ "${1:-}" = "down" ]; then
   [ -z "$WG_QUICK" ] && exit 1
   osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' down '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
+  swiftbar_refresh
   exit 0
 fi
 
