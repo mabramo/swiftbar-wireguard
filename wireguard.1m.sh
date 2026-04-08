@@ -14,8 +14,9 @@ WG_CONF="${HOME}/.config/wireguard/wg0.conf"
 # Interface name — must match the filename without extension
 WG_IFACE="wg0"
 
-# Locate wg-quick — SwiftBar runs with a limited PATH so we search common locations
+# Locate wg-quick and bash 4+ — SwiftBar runs with a limited PATH so we search common locations
 WG_QUICK="$(find /opt/homebrew/bin /usr/local/bin /usr/bin -name wg-quick 2>/dev/null | head -1)"
+BASH4="$(find /opt/homebrew/bin /usr/local/bin -name bash 2>/dev/null | head -1)"
 
 # ── State ──────────────────────────────────────────────────────────────────────
 is_connected() {
@@ -29,22 +30,23 @@ get_ip() {
 # ── Actions ────────────────────────────────────────────────────────────────────
 if [ "${1:-}" = "up" ]; then
   [ -z "$WG_QUICK" ] && exit 1
-  osascript -e 'do shell script "'"${WG_QUICK}"' up '"${WG_CONF}"'" with administrator privileges'
+  osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' up '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
   exit 0
 fi
 
 if [ "${1:-}" = "down" ]; then
   [ -z "$WG_QUICK" ] && exit 1
-  osascript -e 'do shell script "'"${WG_QUICK}"' down '"${WG_CONF}"'" with administrator privileges'
+  osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' down '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
   exit 0
 fi
 
 # ── Menu bar display ───────────────────────────────────────────────────────────
-if [ -z "$WG_QUICK" ]; then
+if [ -z "$WG_QUICK" ] || [ -z "$BASH4" ]; then
   echo "VPN | color=red sfimage=lock.slash"
   echo "---"
-  echo "wg-quick not found | color=red"
-  echo "Install: brew install wireguard-tools wireguard-go | color=gray size=11"
+  [ -z "$WG_QUICK" ] && echo "wg-quick not found | color=red"
+  [ -z "$BASH4" ]    && echo "bash 4+ not found | color=red"
+  echo "Install: brew install wireguard-tools wireguard-go bash | color=gray size=11"
   exit 0
 fi
 
