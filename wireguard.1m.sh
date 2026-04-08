@@ -14,6 +14,9 @@ WG_CONF="${HOME}/.config/wireguard/wg0.conf"
 # Interface name — must match the filename without extension
 WG_IFACE="wg0"
 
+# Full path to wg-quick (SwiftBar runs with limited PATH)
+WG_QUICK="$(command -v wg-quick 2>/dev/null || echo /opt/homebrew/bin/wg-quick)"
+
 # ── State ──────────────────────────────────────────────────────────────────────
 is_connected() {
   ifconfig "$WG_IFACE" &>/dev/null 2>&1
@@ -25,12 +28,12 @@ get_ip() {
 
 # ── Actions ────────────────────────────────────────────────────────────────────
 if [ "${1:-}" = "up" ]; then
-  osascript -e 'do shell script "wg-quick up '"${WG_CONF}"'" with administrator privileges'
+  osascript -e 'do shell script "'"${WG_QUICK}"' up '"${WG_CONF}"'" with administrator privileges'
   exit 0
 fi
 
 if [ "${1:-}" = "down" ]; then
-  osascript -e 'do shell script "wg-quick down '"${WG_CONF}"'" with administrator privileges'
+  osascript -e 'do shell script "'"${WG_QUICK}"' down '"${WG_CONF}"'" with administrator privileges'
   exit 0
 fi
 
