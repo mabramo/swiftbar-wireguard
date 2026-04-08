@@ -17,10 +17,11 @@ A macOS menu bar WireGuard toggle — no App Store required.
 - [SwiftBar](https://github.com/swiftbar/SwiftBar) (`brew install --cask swiftbar`)
 - [wireguard-tools](https://formulae.brew.sh/formula/wireguard-tools) (`brew install wireguard-tools`)
 - [wireguard-go](https://formulae.brew.sh/formula/wireguard-go) (`brew install wireguard-go`)
+- [bash](https://formulae.brew.sh/formula/bash) (`brew install bash`) — macOS ships bash 3; `wg-quick` requires bash 4+
 
 ```bash
 brew install --cask swiftbar
-brew install wireguard-tools wireguard-go
+brew install wireguard-tools wireguard-go bash
 ```
 
 ## Installation
