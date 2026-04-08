@@ -14,8 +14,8 @@ WG_CONF="${HOME}/.config/wireguard/wg0.conf"
 # Interface name — must match the filename without extension
 WG_IFACE="wg0"
 
-# Full path to wg-quick (SwiftBar runs with limited PATH)
-WG_QUICK="$(command -v wg-quick 2>/dev/null || echo /opt/homebrew/bin/wg-quick)"
+# Locate wg-quick — SwiftBar runs with a limited PATH so we search common locations
+WG_QUICK="$(PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:$PATH" command -v wg-quick 2>/dev/null)"
 
 # ── State ──────────────────────────────────────────────────────────────────────
 is_connected() {
@@ -28,18 +28,27 @@ get_ip() {
 
 # ── Actions ────────────────────────────────────────────────────────────────────
 if [ "${1:-}" = "up" ]; then
+  [ -z "$WG_QUICK" ] && exit 1
   osascript -e 'do shell script "'"${WG_QUICK}"' up '"${WG_CONF}"'" with administrator privileges'
   exit 0
 fi
 
 if [ "${1:-}" = "down" ]; then
+  [ -z "$WG_QUICK" ] && exit 1
   osascript -e 'do shell script "'"${WG_QUICK}"' down '"${WG_CONF}"'" with administrator privileges'
   exit 0
 fi
 
 # ── Menu bar display ───────────────────────────────────────────────────────────
+if [ -z "$WG_QUICK" ]; then
+  echo "VPN | color=red sfimage=lock.slash"
+  echo "---"
+  echo "wg-quick not found | color=red"
+  echo "Install: brew install wireguard-tools wireguard-go | color=gray size=11"
+  exit 0
+fi
+
 if is_connected; then
-  IP=$(get_ip)
   echo "VPN | color=green sfimage=lock.fill"
 else
   echo "VPN | color=gray sfimage=lock.open"
