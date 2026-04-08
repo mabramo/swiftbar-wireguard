@@ -19,12 +19,20 @@ WG_QUICK="$(find /opt/homebrew/bin /usr/local/bin /usr/bin -name wg-quick 2>/dev
 BASH4="$(find /opt/homebrew/bin /usr/local/bin -name bash 2>/dev/null | head -1)"
 
 # ── State ──────────────────────────────────────────────────────────────────────
+# On macOS, wireguard-go uses a utun interface — find it by checking all utun
+# interfaces for an address in the WireGuard subnet (10.0.0.0/24)
+wg_utun() {
+  ifconfig 2>/dev/null | awk '/^utun/{iface=$1} /inet 10\.0\.0\./{print iface; exit}'
+}
+
 is_connected() {
-  ifconfig "$WG_IFACE" &>/dev/null 2>&1
+  [ -n "$(wg_utun)" ]
 }
 
 get_ip() {
-  ifconfig "$WG_IFACE" 2>/dev/null | awk '/inet /{print $2}'
+  local iface
+  iface=$(wg_utun)
+  ifconfig "$iface" 2>/dev/null | awk '/inet /{print $2}'
 }
 
 # ── Actions ────────────────────────────────────────────────────────────────────
@@ -37,7 +45,7 @@ if [ "${1:-}" = "up" ]; then
   osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' up '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
   # Wait for interface to come up before refreshing (up to 15s)
   for _ in $(seq 1 15); do
-    ifconfig "$WG_IFACE" &>/dev/null 2>&1 && break
+    is_connected && break
     sleep 1
   done
   swiftbar_refresh
@@ -49,7 +57,7 @@ if [ "${1:-}" = "down" ]; then
   osascript -e 'do shell script "'"${BASH4}"' '"${WG_QUICK}"' down '"${WG_CONF}"' > /tmp/wg-swiftbar.log 2>&1" with administrator privileges'
   # Wait for interface to go down before refreshing (up to 15s)
   for _ in $(seq 1 15); do
-    ifconfig "$WG_IFACE" &>/dev/null 2>&1 || break
+    is_connected || break
     sleep 1
   done
   swiftbar_refresh
